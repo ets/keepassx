@@ -164,6 +164,8 @@ MainWindow::MainWindow()
             SLOT(changeDatabaseSettings()));
     connect(m_ui->actionImportKeePass1, SIGNAL(triggered()), m_ui->tabWidget,
             SLOT(importKeePass1Database()));
+    connect(m_ui->actionExportCsv, SIGNAL(triggered()), m_ui->tabWidget,
+            SLOT(exportToCsv()));
     connect(m_ui->actionLockDatabases, SIGNAL(triggered()), m_ui->tabWidget,
             SLOT(lockDatabases()));
     connect(m_ui->actionQuit, SIGNAL(triggered()), SLOT(close()));
@@ -304,6 +306,7 @@ void MainWindow::setMenuActionState(DatabaseWidget::Mode mode)
             m_ui->actionChangeDatabaseSettings->setEnabled(true);
             m_ui->actionDatabaseSave->setEnabled(true);
             m_ui->actionDatabaseSaveAs->setEnabled(true);
+            m_ui->actionExportCsv->setEnabled(true);
             break;
         }
         case DatabaseWidget::EditMode:
@@ -327,6 +330,7 @@ void MainWindow::setMenuActionState(DatabaseWidget::Mode mode)
             m_ui->actionChangeDatabaseSettings->setEnabled(false);
             m_ui->actionDatabaseSave->setEnabled(false);
             m_ui->actionDatabaseSaveAs->setEnabled(false);
+            m_ui->actionExportCsv->setEnabled(false);
             break;
         default:
             Q_ASSERT(false);
@@ -355,6 +359,7 @@ void MainWindow::setMenuActionState(DatabaseWidget::Mode mode)
         m_ui->actionDatabaseSaveAs->setEnabled(false);
 
         m_ui->actionDatabaseClose->setEnabled(false);
+        m_ui->actionExportCsv->setEnabled(false);
     }
 
     bool inDatabaseTabWidgetOrWelcomeWidget = inDatabaseTabWidget || inWelcomeWidget;
