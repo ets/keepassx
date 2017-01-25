@@ -72,7 +72,7 @@ To compile from source:
 ```bash
 mkdir build
 cd build
-cmake ..
+cmake -DCMAKE_PREFIX_PATH=/usr/local/Cellar/qt5/5.XXX/lib/cmake/ ..
 make [-jX]
 ```
 
