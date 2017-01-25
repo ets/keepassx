@@ -22,6 +22,7 @@
 #include <QDesktopServices>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QFile>
 #include <QLineEdit>
 #include <QKeyEvent>
 #include <QSplitter>
@@ -35,6 +36,7 @@
 #include "core/Group.h"
 #include "core/Metadata.h"
 #include "core/Tools.h"
+#include "format/KeePass2Reader.h"
 #include "gui/ChangeMasterKeyWidget.h"
 #include "gui/Clipboard.h"
 #include "gui/DatabaseOpenWidget.h"
@@ -159,12 +161,14 @@ DatabaseWidget::DatabaseWidget(Database* db, QWidget* parent)
     connect(m_unlockDatabaseWidget, SIGNAL(editFinished(bool)), SLOT(unlockDatabase(bool)));
     connect(this, SIGNAL(currentChanged(int)), this, SLOT(emitCurrentModeChanged()));
     connect(m_searchUi->searchEdit, SIGNAL(textChanged(QString)), this, SLOT(startSearchTimer()));
+    connect(m_searchUi->searchEdit, SIGNAL(copyPasswordActivated()), this, SLOT(copyPassword()));
     connect(m_searchUi->caseSensitiveCheckBox, SIGNAL(toggled(bool)), this, SLOT(startSearch()));
     connect(m_searchUi->searchCurrentRadioButton, SIGNAL(toggled(bool)), this, SLOT(startSearch()));
     connect(m_searchUi->searchRootRadioButton, SIGNAL(toggled(bool)), this, SLOT(startSearch()));
     connect(m_searchUi->searchEdit, SIGNAL(returnPressed()), m_entryView, SLOT(setFocus()));
     connect(m_searchTimer, SIGNAL(timeout()), this, SLOT(search()));
     connect(closeAction, SIGNAL(triggered()), this, SLOT(closeSearch()));
+    connect( &m_file_watcher, SIGNAL( fileChanged() ), this, SLOT( databaseModifedExternally() ) );
 
     setCurrentWidget(m_mainWidget);
 }
@@ -665,8 +669,11 @@ void DatabaseWidget::openDatabase(bool accepted)
         m_databaseOpenWidget = nullptr;
         delete m_keepass1OpenWidget;
         m_keepass1OpenWidget = nullptr;
+        if (config()->get("AutoReloadOnChange").toBool() ) 
+            m_file_watcher.watchFile( m_filename );
     }
     else {
+        m_file_watcher.stopWatching();
         if (m_databaseOpenWidget->database()) {
             delete m_databaseOpenWidget->database();
         }
@@ -936,6 +943,31 @@ void DatabaseWidget::lock()
 void DatabaseWidget::updateFilename(const QString& fileName)
 {
     m_filename = fileName;
+}
+
+void DatabaseWidget::databaseModifedExternally()
+{
+    if ( database() == Q_NULLPTR )
+        return;
+
+    if ( ! config()->get("AutoReloadOnChange").toBool() ) 
+        return;
+
+    KeePass2Reader reader;
+    QFile file(m_filename);
+    if (!file.open(QIODevice::ReadOnly)) {
+        // TODO: error message
+        return;
+    }
+    Database* db = reader.readDatabase(&file, database()->key() );
+    if ( db )
+    {
+        Database* oldDb = m_db;
+        m_db = db;
+        m_groupView->changeDatabase(m_db);
+        Q_EMIT databaseChanged(m_db);
+        delete oldDb;
+    }
 }
 
 int DatabaseWidget::numberOfSelectedEntries() const

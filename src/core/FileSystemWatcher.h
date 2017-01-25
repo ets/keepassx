@@ -1,7 +1,5 @@
 /*
- *  Copyright (C) 2007 Trolltech ASA <info@trolltech.com>
  *  Copyright (C) 2012 Felix Geyer <debfx@fobos.de>
- *  Copyright (C) 2012 Florian Geyer <blueice@fobos.de>
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,35 +15,33 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KEEPASSX_LINEEDIT_H
-#define KEEPASSX_LINEEDIT_H
+#ifndef FILE_SYSTEM_WATCHER_H
+#define FILE_SYSTEM_WATCHER_H
+#include <QFileSystemWatcher>
+#include <QString>
+#include <QObject>
 
-#include <QLineEdit>
-#include <QMessageBox>
-#include <QKeyEvent>
 
-class QToolButton;
-
-class LineEdit : public QLineEdit
+class FileSystemWatcher : public QFileSystemWatcher
 {
-    Q_OBJECT
+    Q_OBJECT ;
 
 public:
-    explicit LineEdit(QWidget* parent = nullptr);
+    FileSystemWatcher ();
+    void watchFile( const QString & );
+    void stopWatching();
 
-Q_SIGNALS:
-    void copyPasswordActivated();
-
-
-protected:
-    void resizeEvent(QResizeEvent* event) override;
-    void keyPressEvent(QKeyEvent* event) override;
-
-private Q_SLOTS:
-    void updateCloseButton(const QString& text);
+    virtual ~FileSystemWatcher();
 
 private:
-    QToolButton* const m_clearButton;
+    QString _file;
+
+private Q_SLOTS:
+    void directoryChangedSlot ( const QString & );
+    void fileChangedSlot ( const QString & );
+Q_SIGNALS:
+    void fileChanged();
 };
 
-#endif // KEEPASSX_LINEEDIT_H
+#endif
+
