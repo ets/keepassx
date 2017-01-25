@@ -72,8 +72,9 @@ To compile from source:
 ```bash
 mkdir build
 cd build
-cmake -DCMAKE_PREFIX_PATH=/usr/local/Cellar/qt5/5.XXX/lib/cmake/ ..
-make [-jX]
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/usr/local/opt/qt5 ..
+make -j3
+/usr/local/opt/qt5/bin/macdeployqt src/KeePassX.app/
 ```
 
 You will have the compiled KeePassX binary inside the `./build/src/` directory.
